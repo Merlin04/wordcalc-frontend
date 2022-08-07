@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import ohm from "ohm-js";
 
-const url = "http://magnesium-cara.dyn.wpi.edu:8090";
+const url = "https://magnesium-cara.dyn.wpi.edu";
 
 const grammar = ohm.grammar(String.raw`ExpressionLanguage {
   Program = Exp

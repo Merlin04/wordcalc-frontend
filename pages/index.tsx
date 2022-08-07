@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from "react";
 import { useAppApi } from "../utils/apiInteractions";
-import { Box, Container, Heading, Input, ThemeUICSSObject } from "theme-ui";
+import { Box, Container, Heading, Input, Text, ThemeUICSSObject } from "theme-ui";
 import Button from "../ui/Button";
 
 const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
@@ -24,6 +24,10 @@ const Home: NextPage = () => {
             }}>
                 <Heading as="h1">Word Calculator</Heading>
                 <Calculator/>
+                <Text sx={{
+                    mt: "2rem",
+                    color: "gray"
+                }}>Built by Arcade, Cara, and Benjamin</Text>
             </Container>
         </div>
     );
