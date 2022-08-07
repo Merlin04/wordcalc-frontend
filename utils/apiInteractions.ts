@@ -3,38 +3,37 @@ import ohm from "ohm-js";
 
 const url = "http://magnesium-cara.dyn.wpi.edu:8090";
 
-const grammar = ohm.grammar(String.raw`WC {
-    Exp = Dyadic | Monadic | Text
-    Dyadic = Add | Subtract
-    Monadic = Intensify
-    Add = Exp "+" Exp
-    Subtract = Exp "-" Exp
-    Intensify = Exp "^2"
-    Text = letter+
+const grammar = ohm.grammar(String.raw`ExpressionLanguage {
+  Program = Exp
+  Exp     = Exp addop Factor        --binary
+          | Factor
+  Factor  = Primary expop  --binary
+          | Primary
+  Primary = "(" Exp ")"           --parens
+          | text
+  addop   = "+" | "-"
+  expop   = "^2"
+  text  = letter+
 }`);
 
+// This is spaghetti code. I am sorry
+// Parsers! At the disco
 const semantics = grammar.createSemantics();
 semantics.addOperation("evaluate", {
-    Exp(exp) {
-        return exp.evaluate();
+    Program(body) {
+        return body.evaluate();
     },
-    Dyadic(exp) {
-        return exp.evaluate();
+    async Exp_binary(left, op, right) {
+        return await (op.sourceString === "+" ? getCloser : getSubtraction)(await left.evaluate(), await right.evaluate());
     },
-    Monadic(exp) {
-        return exp.evaluate();
+    async Factor_binary(left, op) {
+        return await getIntensify(await left.evaluate());
     },
-    async Add(exp1, _, exp2) {
-        return getCloser(await exp1.evaluate(), await exp2.evaluate());
+    Primary_parens(open, expression, close) {
+        return expression.evaluate();
     },
-    async Subtract(exp1, _, exp2) {
-        return getSubtraction(await exp1.evaluate(), await exp2.evaluate());
-    },
-    async Intensify(exp, _) {
-        return getIntensify(await exp.evaluate());
-    },
-    Text(text) {
-        return text.evaluate().join("");
+    text(text) {
+        return text.evaluate().join("").toLowerCase();
     },
     _terminal() {
         return this.sourceString;
@@ -44,10 +43,10 @@ semantics.addOperation("evaluate", {
     }
 })
 
-const parse = (input: string) => {
+const parse = async (input: string) => {
     const match = grammar.match(input);
     if (match.succeeded()) {
-        return semantics(match).evaluate();
+        return (await semantics(match).evaluate()).trim();
     } else {
         throw new Error(match.message);
     }
